@@ -1,0 +1,195 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Money Map</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body{
+background:linear-gradient(135deg,#0f172a,#312e81);
+font-family:Arial;
+}
+</style>
+
+</head>
+
+<body class="text-white min-h-screen p-6">
+
+<h1 class="text-3xl font-bold mb-6">💰 Money Map</h1>
+
+<div class="grid md:grid-cols-3 gap-4 mb-6">
+
+<div class="bg-white text-black p-5 rounded-xl">
+<h2>Total Balance</h2>
+<p id="balance" class="text-2xl font-bold">$0</p>
+</div>
+
+<div class="bg-green-400 text-black p-5 rounded-xl">
+<h2>Income</h2>
+<p id="income" class="text-2xl font-bold">$0</p>
+</div>
+
+<div class="bg-red-400 text-black p-5 rounded-xl">
+<h2>Expense</h2>
+<p id="expense" class="text-2xl font-bold">$0</p>
+</div>
+
+</div>
+
+<div class="bg-white text-black p-6 rounded-xl max-w-xl">
+
+<h2 class="text-xl font-bold mb-4">Add Transaction</h2>
+
+<form id="transaction-form" class="space-y-4">
+
+<input id="description" type="text" placeholder="Description"
+class="w-full p-3 border rounded" required>
+
+<input id="amount" type="number" placeholder="Amount"
+class="w-full p-3 border rounded" required>
+
+<select id="category" class="w-full p-3 border rounded">
+<option>Food</option>
+<option>Transport</option>
+<option>Shopping</option>
+<option>Entertainment</option>
+<option>Other</option>
+</select>
+
+<input id="date" type="date" class="w-full p-3 border rounded">
+
+<div class="flex gap-4">
+
+<label class="flex gap-2">
+<input type="radio" name="type" value="income">
+Income
+</label>
+
+<label class="flex gap-2">
+<input type="radio" name="type" value="expense" checked>
+Expense
+</label>
+
+</div>
+
+<button class="bg-purple-600 text-white w-full p-3 rounded">
+Add Transaction
+</button>
+
+</form>
+
+</div>
+
+<div class="mt-10">
+
+<h2 class="text-xl font-bold mb-3">Transactions</h2>
+
+<ul id="transaction-list" class="space-y-2"></ul>
+
+</div>
+
+
+<script>
+
+let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+
+const form = document.getElementById("transaction-form");
+const list = document.getElementById("transaction-list");
+
+const balanceEl = document.getElementById("balance");
+const incomeEl = document.getElementById("income");
+const expenseEl = document.getElementById("expense");
+
+document.getElementById("date").valueAsDate = new Date();
+
+
+form.addEventListener("submit", function(e){
+
+e.preventDefault();
+
+const description = document.getElementById("description").value;
+const amount = Number(document.getElementById("amount").value);
+const category = document.getElementById("category").value;
+const date = document.getElementById("date").value;
+const type = document.querySelector('input[name="type"]:checked').value;
+
+const transaction = {
+id: Date.now(),
+description,
+amount,
+category,
+date,
+type
+};
+
+transactions.push(transaction);
+
+localStorage.setItem("transactions",JSON.stringify(transactions));
+
+form.reset();
+document.getElementById("date").valueAsDate = new Date();
+
+renderTransactions();
+updateDashboard();
+
+});
+
+
+function renderTransactions(){
+
+list.innerHTML="";
+
+transactions.forEach(t=>{
+
+const li=document.createElement("li");
+
+li.className="bg-white text-black p-3 rounded flex justify-between";
+
+li.innerHTML=`
+<div>
+<b>${t.description}</b>
+<br>
+<small>${t.category} | ${t.date}</small>
+</div>
+
+<div class="${t.type==="income"?"text-green-600":"text-red-600"}">
+${t.type==="income"?"+":"-"}$${t.amount}
+</div>
+`;
+
+list.appendChild(li);
+
+});
+
+}
+
+
+function updateDashboard(){
+
+let income=0;
+let expense=0;
+
+transactions.forEach(t=>{
+
+if(t.type==="income") income+=t.amount;
+else expense+=t.amount;
+
+});
+
+balanceEl.textContent="$"+(income-expense);
+incomeEl.textContent="$"+income;
+expenseEl.textContent="$"+expense;
+
+}
+
+renderTransactions();
+updateDashboard();
+
+</script>
+
+</body>
+</html>
